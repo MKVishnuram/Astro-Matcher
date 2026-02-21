@@ -68,54 +68,39 @@ def verify_password(password: str, stored: str) -> bool:
 # Password passed as plain kwarg — no URL encoding needed
 # NeonDB uses DB_DATABASE (not DB_NAME)
 # ─────────────────────────────────────────────────────────────
-
 def _get_connect_kwargs() -> dict:
-    """Build psycopg2 connection kwargs from env vars or Streamlit secrets."""
+    """Build psycopg2 connection kwargs from Streamlit secrets or env."""
 
-    # ── 1. From .env / OS environment ──────────────────────────
-    host = os.environ.get("DB_HOST", "").strip()
-    if host:
-        return {
-            "host":     host,
-            "port":     int(os.environ.get("DB_PORT", "5432")),
-            "database": os.environ.get("DB_DATABASE",
-                        os.environ.get("DB_NAME", "neondb")).strip(),
-            "user":     os.environ.get("DB_USER", "").strip(),
-            "password": os.environ.get("DB_PASSWORD", "").strip(),
-            "sslmode":  os.environ.get("DB_SSLMODE", "require").strip(),
-            "connect_timeout": 15,
-        }
-
-    # ── 2. From Streamlit secrets (Streamlit Cloud deployment) ──
+    # 1️⃣ Prefer Streamlit secrets (Cloud deployment)
     try:
         s = st.secrets
-        host_s = str(s.get("DB_HOST", "")).strip()
-        if host_s:
+        if "DB_HOST" in s:
             return {
-                "host":     host_s,
+                "host":     str(s["DB_HOST"]).strip(),
                 "port":     int(s.get("DB_PORT", 5432)),
-                "database": str(s.get("DB_DATABASE",
-                                s.get("DB_NAME", "neondb"))).strip(),
-                "user":     str(s.get("DB_USER", "")).strip(),
-                "password": str(s.get("DB_PASSWORD", "")).strip(),
+                "database": str(s.get("DB_DATABASE", "neondb")).strip(),
+                "user":     str(s["DB_USER"]).strip(),
+                "password": str(s["DB_PASSWORD"]).strip(),
                 "sslmode":  str(s.get("DB_SSLMODE", "require")).strip(),
                 "connect_timeout": 15,
             }
     except Exception:
         pass
 
-    raise RuntimeError(
-        "\n\n❌  NeonDB credentials not found!\n\n"
-        "Add this to your .env file in the project folder:\n\n"
-        "  DB_HOST=ep-winter-shot-ain34g1s3-pooler.c-4.us-east-1.aws.neon.tech\n"
-        "  DB_PORT=5432\n"
-        "  DB_DATABASE=neondb\n"
-        "  DB_USER=neondb_owner\n"
-        "  DB_PASSWORD=your_password\n"
-        "  DB_SSLMODE=require\n\n"
-        "For Streamlit Cloud: paste the same keys in App Settings → Secrets.\n"
-    )
+    # 2️⃣ Fallback to local .env / OS env (for development)
+    host = os.environ.get("DB_HOST")
+    if host:
+        return {
+            "host":     host.strip(),
+            "port":     int(os.environ.get("DB_PORT", "5432")),
+            "database": os.environ.get("DB_DATABASE", "neondb").strip(),
+            "user":     os.environ.get("DB_USER", "").strip(),
+            "password": os.environ.get("DB_PASSWORD", "").strip(),
+            "sslmode":  os.environ.get("DB_SSLMODE", "require").strip(),
+            "connect_timeout": 15,
+        }
 
+    raise RuntimeError("Database credentials not found")
 
 # ─────────────────────────────────────────────────────────────
 # CONNECTION POOL
