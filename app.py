@@ -280,16 +280,72 @@ section[data-testid="stSidebar"] div[data-testid="stButton"] > button:hover {
 /* ══════════════════════════════════════════════
    MISC
 ══════════════════════════════════════════════ */
-#MainMenu, footer, header { visibility: hidden !important; }
-iframe { border: none !important; display: block; }
-[data-testid="stSpinner"] { color: var(--accent) !important; }
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-/* Divider */
+/* ══════════════════════════════════════════════
+   MISC & DRAWER NAVIGATION (ENGINEERED FIX)
+══════════════════════════════════════════════ */
+
+/* 1. Hide default menu, footer, and those tiny default arrows */
+#MainMenu, footer { visibility: hidden !important; }
+
+/* Hide the native "close" arrow inside the sidebar */
+button[data-testid="stSidebarCollapseButton"] div {
+    display: none !important;
+}
+
+/* 2. Create the 'User-Aware' Floating Action Button (FAB) */
+button[data-testid="stSidebarCollapseButton"] {
+    background-color: #6366F1 !important; /* Your Accent Color */
+    color: white !important;
+    border-radius: 50% !important;
+    width: 54px !important;
+    height: 54px !important;
+    position: fixed !important;
+    top: 20px !important;
+    left: 20px !important;
+    z-index: 1000001 !important;
+    box-shadow: 0 6px 20px rgba(99,102,241,0.5) !important;
+    border: 3px solid #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+/* 3. Add a custom icon inside the FAB since we hid the default one */
+button[data-testid="stSidebarCollapseButton"]::after {
+    content: "☰"; /* A standard menu 'hamburger' icon */
+    font-size: 24px;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+}
+
+/* Hover and Active states for better awareness */
+button[data-testid="stSidebarCollapseButton"]:hover {
+    transform: scale(1.15) rotate(90deg) !important;
+    background-color: #4F46E5 !important;
+}
+
+/* 4. Ensure the Header is truly transparent so it doesn't block clicks */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+    height: 0px !important;
+}
+
+/* 5. Smooth Sidebar Drawer Transitions */
+[data-testid="stSidebar"] {
+    transition: all 0.3s ease !important;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.1) !important;
+}
+
+/* Fix for main content area layout */
+[data-testid="stSidebar"][aria-expanded="false"] {
+    margin-left: -268px !important; /* Forces it fully out of sight when closed */
+}
+
+iframe { border: none !important; display: block; }
 hr { border-color: var(--border) !important; margin: 16px 0 !important; }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -616,7 +672,7 @@ def bar_chart(results):
         font_color="#374151")
     return fig
 
-
+#
 # ─────────────────────────────────────────────────────────────
 # ██  MATCH RESULTS RENDERER
 # ─────────────────────────────────────────────────────────────
@@ -843,6 +899,17 @@ def render_results(summary, user, g_padham, b_padham, g_star_n, b_star_n, g_rasi
     &nbsp;·&nbsp; Software Engineer &nbsp;·&nbsp; TCE Alumni
   </span>
 </div>""", 50)
+
+
+
+
+
+
+
+
+
+
+
 
 
 # ─────────────────────────────────────────────────────────────
